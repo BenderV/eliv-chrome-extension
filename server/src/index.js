@@ -5,46 +5,24 @@ const ENDPOINT = "https://api.openai.com/v1/completions";
 TEMPLATE = `
 GOAL:
 ELI5 - Explain Like I'm 5
-In the following phrase, explain the meaning or it's technical words in 3-5 sentences max.
-If the text is pretty obvious (does not contain technical terms, jargon or acronyms) return "NULL"
+In the following phrase, explain the meaning of the selected context in 3-10 sentences max.
 
 # Sentence
-Good seeing you at NeurIPS! 
+Good seeing you at <SELECTED>NeurIPS</SELECTED>! 
 # Explain
 NeurIPS is a conference for machine learning researchers.
 
 ---
 
 # Sentence
-If you need more tokens, you can always request a quota increase.
-# Explain
-NULL
-
----
-
-# Sentence
-who took office on 15 November 2012 and was re-elected twice on 25 October 2017
-# Explain
-NULL
-
----
-
-# Sentence
- the CCP general secretary has been the paramount leader of the PRC.
+ the CCP general secretary has been the <SELECTED>paramount leader</SELECTED> of the PRC.
 # Explain
 The paramount leader is an informal term for the most important political figure in China
 
 ---
 
 # Sentence
-major scientific jour
-# Explain
-NULL
-
----
-
-# Sentence
-Joint Embedding
+<SELECTED>Joint Embedding</SELECTED>
 # Explain
 Joint embedding is a method for embedding words and phrases into a common vector space.
 This allows for the comparison of words and phrases in a way that is not possible with traditional word embeddings.

@@ -1,3 +1,10 @@
+const divURL = chrome.runtime.getURL('box.html');
+
+fetch(divURL).then(r => r.text()).then(html => {
+    document.body.insertAdjacentHTML('beforeend', html);
+    // not using innerHTML as it would break js event listeners of the page
+});
+
 function getTopRightPosition() {
     // Get the current selection from the page
     const selection = document.getSelection();
@@ -18,36 +25,6 @@ function getTopRightPosition() {
       return { x, y };
     }
 }
-
-
-function createBox() {
-    // Create a div element and set its width and height
-    const box = document.createElement('div');
-    box.style.width = '300px';
-    box.style.height = 'auto';
-    
-    // Set the box's id and background color
-    box.id = 'explainer-box';
-    box.style.backgroundColor = '#f5f5f5'
-    box.style.borderRadius = '0.4rem'
-    box.style.padding = '0.8rem'
-    box.style.display = "none";
-    box.style.zIndex = '99999999';
-    box.style.backgroundColor = "rgb(255, 255, 255)";
-    box.style.border = "1px solid rgb(233, 236, 247)";
-    box.style.borderRadius = "12px";
-    box.style.boxShadow = "rgb(1 7 44 / 6%) 0px 36px 84px, rgb(1 7 44 / 4%) 0px 7.00133px 25.3235px, rgb(1 7 44 / 3%) 0px 0.581276px 10.5181px, rgb(1 7 44 / 2%) 0px -0.880959px 3.80419px;";
-    box.style.boxSizing = "border-box";
-    box.style.fontFamily = "monospace";
-
-
-    // Set the box's transparency
-    box.style.opacity = 1;
-  
-    // Add the box to the document
-    document.body.appendChild(box);
-    return box
-  }
   
 // Fetch request
 function fetchRequest(inputs) {
@@ -66,22 +43,50 @@ function fetchRequest(inputs) {
     })
 }
 
-const resultsBox = createBox()
+function getSurroundingText(selection) {
+    // Get the nodes that contain the start and end of the selection
+    var startNode = selection.anchorNode;
+    var endNode = selection.focusNode;
+  
+    // Get the text content of these nodes
+    var startText = startNode.nodeValue;
+    var endText = endNode.nodeValue;
+  
+    // Get the index of the start and end of the selection within the text
+    var startIndex = startText.indexOf(selection);
+    var endIndex = endText.indexOf(selection) + selection.toString().length;
+  
+    // Get the 100 characters before and after the selected text
+    var before = startText.substr(Math.max(0, startIndex - 100), startIndex - Math.max(0, startIndex - 100));
+    var after = endText.substr(endIndex, Math.min(endIndex + 100, endText.length));
+  
+    // Concatenate the text to get the surrounding text
+    var surroundingText = before + '<SELECTED>' + selection + '</SELECTED>'+ after;
+  
+    return surroundingText;
+}
 
-let lastEvent = null;
 
-document.addEventListener('mouseup', function(event) {
-    lastEvent = event.timeStamp;
-    var selectedText = window.getSelection().toString();
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "ELIV_THIS") {
+        const displayBox = document.getElementById("eliv")
+        const displayBoxDescription = document.getElementById("eliv-description")
 
-    if (selectedText) {
+        const selectedContext = getSurroundingText(window.getSelection())
+        console.debug("selectedContext", selectedContext)
+
+        if (selectedContext.length === 0) {
+            alert("Please select some text to explain.");
+            return;
+        }
+
+        showLoadingCursor();
         // Call the OpenAPI endpoint with the highlighted text and API key
-        fetchRequest({'input': selectedText}).then((result) => {
-            if (lastEvent !== event.timeStamp) {
-                return
-            }
+        fetchRequest({'input': selectedContext}).then((result) => {
+            restoreCursor();
+
             if (result === 'NULL') {
-                resultsBox.style.display = "none";
+                displayBox.style.display = "none";
                 return
             }
             const resultElement = document.createElement("div");
@@ -89,20 +94,32 @@ document.addEventListener('mouseup', function(event) {
             resultElement.innerHTML = result;
 
             // Fill the box with the result
-            resultsBox.innerHTML = ""; // Clear the results from the previous search
-            resultsBox.appendChild(resultElement);
+            displayBoxDescription.innerHTML = ""; // Clear the results from the previous search
+            displayBoxDescription.appendChild(resultElement);
 
             // Position the results box near the mouse cursor
-            resultsBox.style.position = 'absolute';
             const position = getTopRightPosition();
-            resultsBox.style.top = position.y + "px";
-            resultsBox.style.left = position.x + "px";
-            resultsBox.style.display = "block";
+            displayBox.style.top = position.y + "px";
+            displayBox.style.left = position.x + "px";
+            displayBox.style.display = "block";
         });
-    }
-    else {
-        resultsBox.style.display = "none";
     }
 });
 
+// Hide the results box when the user clicks anywhere on the page (except the results box)
+document.addEventListener("click", (event) => {
+    if (event.target.closest("#eliv") === null) {
+        document.getElementById("eliv").style.display = "none";
+    }
+})
 
+const showLoadingCursor = () => {
+    const style = document.createElement("style");
+    style.id = "corsor_wait";
+    style.innerHTML = `* {cursor: wait;}`;
+    document.head.insertBefore(style, null);
+};
+  
+const restoreCursor = () => {
+    document.getElementById("corsor_wait").remove();
+};
