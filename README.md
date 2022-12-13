@@ -4,6 +4,8 @@
 
 A chrome extension that uses a GPT-3 model to explain text on a webpage. Select text and click the extension to get a simple explanation.
 
+![animation](https://user-images.githubusercontent.com/2799516/207385013-6c15f2da-46d9-4c84-96b5-e62d747e34c3.gif)
+
 ## Installation
 
 ### Chrome Extension
