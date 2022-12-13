@@ -1,0 +1,22 @@
+#eliv {
+    width: 300px;
+    height: auto;
+    position: absolute;
+    background-color: rgb(255, 255, 255);
+    border-radius: 12px;
+    padding: 0.8rem;
+    z-index: 99999999;
+    border: 1px solid rgb(233, 236, 247);
+    box-shadow: rgb(1 7 44 / 6%) 0px 36px 84px, rgb(1 7 44 / 4%) 0px 7.00133px 25.3235px, rgb(1 7 44 / 3%) 0px 0.581276px 10.5181px, rgb(1 7 44 / 2%) 0px -0.880959px 3.80419px;
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: large;
+    opacity: 1;
+}
+
+#eliv-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color:rgb(255, 28, 102);
+    margin-bottom: 0.5rem;
+}
